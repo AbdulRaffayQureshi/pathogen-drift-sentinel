@@ -1,8 +1,8 @@
-name: Pathogen Drift Sentinel Cron
+name: 🧬 Pathogen Drift Sentinel MLOps
 
 on:
   schedule:
-    # Runs every 5 hours (within the 4-7 hour window)
+    # Executes automatically every 5 hours
     - cron: '0 */5 * * *'
   workflow_dispatch:
 
@@ -10,29 +10,33 @@ permissions:
   contents: write
 
 jobs:
-  surveillance-sync:
+  surveillance-mlops-sync:
+    name: 🧪 CI Gate & 🛰️ Genomic Telemetry Sync
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: 📥 Checkout Repository History
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.11
+      - name: 🐍 Set up Python 3.11 Runtime
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Dependencies
+      - name: 📦 Install MLOps & Bioinformatics Dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Bio-Sentinel Orchestrator & Notify Discord
+      - name: 🧪 Execute Pytest Unit Test Quality Gate
+        run: pytest tests/test_pipeline.py -v
+
+      - name: 🚀 Run Bio-Sentinel Engine & Dispatch Discord Alert
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: bash scripts/run_pipeline.sh
 
-      - name: Commit and Push Telemetry Updates
+      - name: 📊 Commit & Push Parquet, SVG & README Telemetry
         if: success()
         env:
           GH_EMAIL: ${{ secrets.GH_USER_EMAIL }}
@@ -42,9 +46,9 @@ jobs:
           git config user.email "${GH_EMAIL:-${GITHUB_ACTOR}@users.noreply.github.com}"
           git add data/ assets/ README.md
           if git diff --staged --quiet; then
-            echo "No changes to commit."
+            echo "✨ No telemetry changes to commit."
           else
             TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
-            git commit -m "chore(telemetry): automated genomic drift sync [${TIMESTAMP}]"
+            git commit -m "🧬 chore(telemetry): automated genomic drift & ML sync [${TIMESTAMP}]"
             git push origin HEAD
           fi

@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 import math
 from pathlib import Path
+import re
 import sys
 import time
 
@@ -18,7 +19,7 @@ TARGETS = {
     "A_baumannii_Meropenem": '"Acinetobacter baumannii"[Organism] AND meropenem[All Fields]',
     "blaNDM_AMR_Gene": 'blaNDM[All Fields] AND "antimicrobial resistance"[All Fields]',
     "H5N1_Avian_Flu": '"Influenza A virus"[Organism] AND H5N1[All Fields]',
-    "SLC6A4_Variants": 'SLC6A4[Gene Name] AND "Homo sapiens"[Organism]'
+    "SLC6A4_Variants": 'SLC6A4[Gene Name] AND "Homo sapiens"[All Fields]'
 }
 
 def write_status(status: str, processed: int, entropy: float, ml_state: str, ml_score: float, error_msg: str = "No errors detected"):
@@ -44,31 +45,34 @@ def update_readme(latest_df, total_snapshots: int, macro_entropy: float, ml_stat
         delta_str = f"+{int(r['delta_records'])}" if r["delta_records"] >= 0 else str(int(r["delta_records"]))
         badge = "🔴 ANOMALY" if r["anomaly_flag"] == "ANOMALY" else ("🟡 WARMUP" if r["anomaly_flag"] == "WARMUP" else "🟢 NORMAL")
         rows.append(
-            f"| `{r['target']}` | {int(r['count']):,} | `{delta_str}` | {r['gc_pct']:.2f}% | {r['kmer_entropy']:.4f} bits | {badge} (`{r['anomaly_score']:.3f}`) |"
+            f"| `{r['target']}` | **{int(r['count']):,}** | `{delta_str}` | `{r['gc_pct']:.2f}%` | `{r['kmer_entropy']:.4f} bits` | {badge} (`{r['anomaly_score']:.3f}`) |"
         )
     table_body = "\n".join(rows)
 
-    content = f"""# Pathogen & Genomic Drift Sentinel (v2.0 MLOps)
-
-Automated Linux/Zsh Bioinformatics & Unsupervised Anomaly Detection pipeline executing every 5 hours via GitHub Actions, DuckDB/Parquet OLAP storage, and Scikit-learn `IsolationForest`.
+    telemetry_block = f"""<!-- TELEMETRY_START -->
+### 📡 Live Genomic & Unsupervised ML Telemetry
+* 🕒 **Last Automated Sync (UTC):** `{ts}`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `{total_snapshots}`
+* 🧬 **Macro Distribution Entropy ($H$):** `{macro_entropy:.4f} bits`
+* 🧠 **Isolation Forest Anomaly Engine:** `{ml_state}` *(Min Decision Score: `{ml_score:.4f}`)*
 
 ![Live Genomic Surveillance Dashboard](assets/telemetry_dashboard.svg)
 
-## Live Genomic & ML Telemetry
-* **Last Automated Sync (UTC):** `{ts}`
-* **Total DuckDB Parquet Snapshots:** `{total_snapshots}`
-* **Macro Distribution Entropy ($H$):** `{macro_entropy:.4f} bits`
-* **Isolation Forest Status:** `{ml_state}` (Min Decision Score: `{ml_score:.4f}`)
-
-| Surveillance Target | NCBI Records | 5h Velocity ($\Delta$) | FASTA GC% | 3-mer Complexity ($H_3$) | Isolation Forest State |
+| 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 {table_body}
+<!-- TELEMETRY_END -->"""
 
----
-*Backed by DuckDB ZSTD Parquet storage & Scikit-learn Isolation Forest • Automated via GitHub Actions.*
-"""
-    with open(README_FILE, "w", encoding="utf-8") as f:
-        f.write(content)
+    if README_FILE.exists():
+        current_text = README_FILE.read_text(encoding="utf-8")
+        pattern = re.compile(r"<!-- TELEMETRY_START -->.*?<!-- TELEMETRY_END -->", re.DOTALL)
+        if pattern.search(current_text):
+            updated_text = pattern.sub(telemetry_block, current_text)
+            README_FILE.write_text(updated_text, encoding="utf-8")
+            return
+
+    # Fallback if markers are missing
+    README_FILE.write_text(f"# 🧬 Pathogen & Genomic Drift Sentinel\n\n{telemetry_block}\n", encoding="utf-8")
 
 def main():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -94,7 +98,7 @@ def main():
         update_readme(latest_df, len(scored_df), macro_entropy, ml_state, ml_score)
 
         write_status("SUCCESS", len(new_rows), macro_entropy, ml_state, ml_score)
-        print(f"[OK] v2.0 Synced | Entropy: {macro_entropy:.4f} | ML State: {ml_state} ({ml_score:.4f})")
+        print(f"[OK] v2.1 Synced | Entropy: {macro_entropy:.4f} | ML State: {ml_state} ({ml_score:.4f})")
 
     except Exception as exc:
         write_status("ERROR", len(new_rows), 0.0, "FAILED", 0.0, str(exc))
