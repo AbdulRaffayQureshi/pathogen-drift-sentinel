@@ -1,0 +1,50 @@
+name: Pathogen Drift Sentinel Cron
+
+on:
+  schedule:
+    # Runs every 5 hours (within the 4-7 hour window)
+    - cron: '0 */5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  surveillance-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Bio-Sentinel Orchestrator & Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: bash scripts/run_pipeline.sh
+
+      - name: Commit and Push Telemetry Updates
+        if: success()
+        env:
+          GH_EMAIL: ${{ secrets.GH_USER_EMAIL }}
+          GH_NAME: ${{ secrets.GH_USER_NAME }}
+        run: |
+          git config user.name "${GH_NAME:-${GITHUB_ACTOR}}"
+          git config user.email "${GH_EMAIL:-${GITHUB_ACTOR}@users.noreply.github.com}"
+          git add data/telemetry_history.json README.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+            git commit -m "chore(telemetry): automated genomic drift sync [${TIMESTAMP}]"
+            git push origin HEAD
+          fi
