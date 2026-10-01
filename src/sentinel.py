@@ -17,7 +17,7 @@ STATUS_ENV = Path("/tmp/sentinel_status.env")
 
 TARGETS = {
     "A_baumannii_Meropenem": '"Acinetobacter baumannii"[Organism] AND meropenem[All Fields]',
-    "blaNDM_AMR_Gene": 'blaNDM[All Fields] AND "antimicrobial resistance"[All Fields]',
+    "blaNDM_AMR_Gene": 'blaNDM[All Fields] AND "antimicrobial resistance"[All Fields] AND 200:5000[SLEN]',
     "H5N1_Avian_Flu": '"Influenza A virus"[Organism] AND H5N1[All Fields]',
     "SLC6A4_Variants": 'SLC6A4[Gene Name] AND "Homo sapiens"[All Fields]'
 }
