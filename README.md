@@ -21,6 +21,20 @@
 ---
 
 <!-- TELEMETRY_START -->
+### 📡 Live Genomic & Unsupervised ML Telemetry
+* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:08:34 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `16`
+* 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
+* 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0000`)*
+
+![Live Genomic Surveillance Dashboard](assets/telemetry_dashboard.svg)
+
+| 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.165`) |
+| `blaNDM_AMR_Gene` | **10,315** | `+0` | `0.00%` | `0.0000 bits` | 🟢 NORMAL (`0.000`) |
+| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.139`) |
+| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.130`) |
 <!-- TELEMETRY_END -->
 
 ---
@@ -74,7 +88,22 @@ flowchart LR
 * `src/storage_duckdb.py` — Executes in-memory DuckDB OLAP queries over `data/telemetry_store.parquet` using SQL window functions (`LAG`, `AVG OVER`).
 * `src/ml_detector.py` — Runs Scikit-Learn `IsolationForest` and classifies each target into `WARMUP`, `NORMAL`, or `ANOMALY`.
 * `src/visualizer.py` — Renders the dual-panel dark-mode vector dashboard to `assets/telemetry_dashboard.svg`.
-* `src/sentinel.py` — Master coordinator that orchestrates all modules and surgically injects live metrics between `<!-- TELEMETRY_START -->` and `<!-- TELEMETRY_END -->`.
+* `src/sentinel.py` — Master coordinator that orchestrates all modules and surgically injects live metrics between `<!-- TELEMETRY_START -->
+### 📡 Live Genomic & Unsupervised ML Telemetry
+* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:08:34 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `16`
+* 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
+* 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0000`)*
+
+![Live Genomic Surveillance Dashboard](assets/telemetry_dashboard.svg)
+
+| 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.165`) |
+| `blaNDM_AMR_Gene` | **10,315** | `+0` | `0.00%` | `0.0000 bits` | 🟢 NORMAL (`0.000`) |
+| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.139`) |
+| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.130`) |
+<!-- TELEMETRY_END -->`.
 * `scripts/run_pipeline.sh` — Bash wrapper that captures latency/exit codes and dispatches color-coded telemetry cards to Discord.
 * `tests/test_pipeline.py` — Automated `pytest` suite verifying sequence math and ML state transitions before every cloud run.
 

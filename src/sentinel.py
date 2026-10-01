@@ -23,7 +23,7 @@ TARGETS = {
 }
 
 def write_status(status: str, processed: int, entropy: float, ml_state: str, ml_score: float, error_msg: str = "No errors detected"):
-    clean_err = error_msg.replace('"', "'").replace("\n", " ")[:180]
+    clean_err = error_msg.replace("\\", "/").replace('"', "'").replace("\n", " ")[:180]
     with open(STATUS_ENV, "w", encoding="utf-8") as f:
         f.write(f'PIPELINE_STATUS="{status}"\n')
         f.write(f'RECORDS_PROCESSED="{processed}"\n')
@@ -67,7 +67,7 @@ def update_readme(latest_df, total_snapshots: int, macro_entropy: float, ml_stat
         current_text = README_FILE.read_text(encoding="utf-8")
         pattern = re.compile(r"<!-- TELEMETRY_START -->.*?<!-- TELEMETRY_END -->", re.DOTALL)
         if pattern.search(current_text):
-            updated_text = pattern.sub(telemetry_block, current_text)
+            updated_text = pattern.sub(lambda _: telemetry_block, current_text)
             README_FILE.write_text(updated_text, encoding="utf-8")
             return
 
