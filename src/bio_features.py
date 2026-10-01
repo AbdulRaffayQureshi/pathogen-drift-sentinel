@@ -39,31 +39,28 @@ def _pull_fasta_bases(id_list: list[str]) -> str:
     return "".join([b for b in raw.upper() if b in "ATCG"])[:15000]
 
 def fetch_target_bio_features(query: str) -> dict:
-    # Exclude empty CON/WGS master scaffold pointers so efetch always gets real nucleotides
-    seq_query = f"({query}) AND biomol_genomic[PROP] NOT gbdiv_con[PROP] NOT wgs[PROP]"
-    search_resp = requests.get(
+    # Step A: True total record count across all NCBI nuccore divisions
+    count_resp = requests.get(
         f"{NCBI_BASE}/esearch.fcgi",
-        params={"db": "nuccore", "term": seq_query, "retmode": "json", "retmax": 10, "sort": "date"},
+        params={"db": "nuccore", "term": query, "retmode": "json", "retmax": 0},
         headers=HEADERS,
         timeout=20
     )
-    search_resp.raise_for_status()
-    res = search_resp.json()["esearchresult"]
-    total_count = int(res["count"])
-    id_list = res.get("idlist", [])
+    count_resp.raise_for_status()
+    total_count = int(count_resp.json()["esearchresult"]["count"])
 
+    time.sleep(0.35)
+    # Step B: Fetch non-scaffold sequence IDs specifically for FASTA GC% & 3-mer extraction
+    seq_query = f"({query}) AND biomol_genomic[PROP] NOT gbdiv_con[PROP] NOT wgs[PROP]"
+    seq_resp = requests.get(
+        f"{NCBI_BASE}/esearch.fcgi",
+        params={"db": "nuccore", "term": seq_query, "retmode": "json", "retmax": 8, "sort": "date"},
+        headers=HEADERS,
+        timeout=20
+    )
+    seq_resp.raise_for_status()
+    id_list = seq_resp.json()["esearchresult"].get("idlist", [])
     concat_seq = _pull_fasta_bases(id_list)
-
-    # Fallback to relevance sort if date-sorted entries had no raw FASTA bases
-    if len(concat_seq) < 50:
-        fb_resp = requests.get(
-            f"{NCBI_BASE}/esearch.fcgi",
-            params={"db": "nuccore", "term": f"{query} AND cds[Feature key]", "retmode": "json", "retmax": 5},
-            headers=HEADERS,
-            timeout=20
-        )
-        fb_resp.raise_for_status()
-        concat_seq = _pull_fasta_bases(fb_resp.json()["esearchresult"].get("idlist", []))
 
     return {
         "count": total_count,
