@@ -5,7 +5,7 @@ import time
 import requests
 
 NCBI_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-HEADERS = {"User-Agent": "PathogenDriftSentinel/2.0 (Bio-MLOps-Pipeline)"}
+HEADERS = {"User-Agent": "PathogenDriftSentinel/2.1 (Bio-MLOps-Pipeline)"}
 
 def compute_kmer_entropy(seq: str, k: int = 3) -> float:
     seq = "".join([b for b in seq.upper() if b in "ATCG"])
@@ -23,11 +23,27 @@ def compute_gc_content(seq: str) -> float:
     gc = sum(1 for b in seq if b in "GC")
     return round((gc / len(seq)) * 100.0, 2)
 
+def _pull_fasta_bases(id_list: list[str]) -> str:
+    if not id_list:
+        return ""
+    time.sleep(0.35)
+    fetch_resp = requests.get(
+        f"{NCBI_BASE}/efetch.fcgi",
+        params={"db": "nuccore", "id": ",".join(id_list), "rettype": "fasta", "retmode": "text"},
+        headers=HEADERS,
+        timeout=25
+    )
+    fetch_resp.raise_for_status()
+    lines = [line.strip() for line in fetch_resp.text.splitlines() if not line.startswith(">")]
+    raw = "".join(lines)
+    return "".join([b for b in raw.upper() if b in "ATCG"])[:15000]
+
 def fetch_target_bio_features(query: str) -> dict:
-    # 1. Search nuccore for total count + latest 3 sequence IDs
+    # Exclude empty CON/WGS master scaffold pointers so efetch always gets real nucleotides
+    seq_query = f"({query}) AND biomol_genomic[PROP] NOT gbdiv_con[PROP] NOT wgs[PROP]"
     search_resp = requests.get(
         f"{NCBI_BASE}/esearch.fcgi",
-        params={"db": "nuccore", "term": query, "retmode": "json", "retmax": 3, "sort": "date"},
+        params={"db": "nuccore", "term": seq_query, "retmode": "json", "retmax": 10, "sort": "date"},
         headers=HEADERS,
         timeout=20
     )
@@ -36,21 +52,18 @@ def fetch_target_bio_features(query: str) -> dict:
     total_count = int(res["count"])
     id_list = res.get("idlist", [])
 
-    if not id_list:
-        return {"count": total_count, "gc_pct": 50.0, "kmer_entropy": 4.0}
+    concat_seq = _pull_fasta_bases(id_list)
 
-    time.sleep(0.35)
-    # 2. Fetch raw FASTA for latest sequences to compute genomic drift features
-    fetch_resp = requests.get(
-        f"{NCBI_BASE}/efetch.fcgi",
-        params={"db": "nuccore", "id": ",".join(id_list), "rettype": "fasta", "retmode": "text"},
-        headers=HEADERS,
-        timeout=25
-    )
-    fetch_resp.raise_for_status()
-
-    lines = [line.strip() for line in fetch_resp.text.splitlines() if not line.startswith(">")]
-    concat_seq = "".join(lines)[:15000]  # Cap at 15kb for fast CI processing
+    # Fallback to relevance sort if date-sorted entries had no raw FASTA bases
+    if len(concat_seq) < 50:
+        fb_resp = requests.get(
+            f"{NCBI_BASE}/esearch.fcgi",
+            params={"db": "nuccore", "term": f"{query} AND cds[Feature key]", "retmode": "json", "retmax": 5},
+            headers=HEADERS,
+            timeout=20
+        )
+        fb_resp.raise_for_status()
+        concat_seq = _pull_fasta_bases(fb_resp.json()["esearchresult"].get("idlist", []))
 
     return {
         "count": total_count,

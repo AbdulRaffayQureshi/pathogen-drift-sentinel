@@ -50,7 +50,6 @@ def update_readme(latest_df, total_snapshots: int, macro_entropy: float, ml_stat
     table_body = "\n".join(rows)
 
     telemetry_block = f"""<!-- TELEMETRY_START -->
-### 📡 Live Genomic & Unsupervised ML Telemetry
 * 🕒 **Last Automated Sync (UTC):** `{ts}`
 * 🗄️ **Cumulative DuckDB Parquet Snapshots:** `{total_snapshots}`
 * 🧬 **Macro Distribution Entropy ($H$):** `{macro_entropy:.4f} bits`
