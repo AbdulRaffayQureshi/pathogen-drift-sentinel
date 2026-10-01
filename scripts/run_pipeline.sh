@@ -5,7 +5,7 @@ if [[ -f .env ]]; then source .env; fi
 START_TIME=$(date +%s)
 rm -f /tmp/sentinel_status.env
 
-echo "[INFO] Starting Pathogen Drift Sentinel pipeline..."
+echo "[INFO] Starting Pathogen Drift Sentinel v2.0 MLOps pipeline..."
 python3 src/sentinel.py
 EXIT_CODE=$?
 
@@ -18,6 +18,8 @@ else
     PIPELINE_STATUS="CRITICAL_FAILURE"
     RECORDS_PROCESSED="0"
     DRIFT_ENTROPY="0.0000"
+    ML_STATE="CRASHED"
+    ML_SCORE="0.0000"
     ERROR_MESSAGE="Python process terminated before writing status file."
 fi
 
@@ -28,12 +30,15 @@ else
 fi
 
 if [[ -n "${DISCORD_WEBHOOK_URL:-}" ]]; then
-    if [[ $EXIT_CODE -eq 0 ]]; then
-        COLOR=3066993
-        TITLE="✅ Bio-Sentinel Pipeline Executed (No Errors)"
+    if [[ $EXIT_CODE -ne 0 ]]; then
+        COLOR=15158332 # Red
+        TITLE="🚨 Bio-Sentinel v2.0 Failed (Errors Detected)"
+    elif [[ "${ML_STATE}" == "ANOMALY_DETECTED" ]]; then
+        COLOR=16753920 # Amber Warning
+        TITLE="⚠️ Bio-Sentinel v2.0: Genomic Drift Anomaly Flagged"
     else
-        COLOR=15158332
-        TITLE="🚨 Bio-Sentinel Pipeline Failed (Errors Detected)"
+        COLOR=3066993 # Green
+        TITLE="✅ Bio-Sentinel v2.0 Executed (No Errors)"
     fi
 
     PAYLOAD=$(cat <<JSON
@@ -44,21 +49,20 @@ if [[ -n "${DISCORD_WEBHOOK_URL:-}" ]]; then
     "color": ${COLOR},
     "fields": [
       {"name": "Status", "value": "\`${PIPELINE_STATUS}\`", "inline": true},
-      {"name": "Targets Processed", "value": "\`${RECORDS_PROCESSED}\`", "inline": true},
-      {"name": "Shannon Entropy", "value": "\`${DRIFT_ENTROPY} bits\`", "inline": true},
-      {"name": "Execution Time", "value": "\`${DURATION}s\`", "inline": true},
+      {"name": "Targets Synced", "value": "\`${RECORDS_PROCESSED}\`", "inline": true},
+      {"name": "Macro Entropy", "value": "\`${DRIFT_ENTROPY} bits\`", "inline": true},
+      {"name": "Isolation Forest", "value": "\`${ML_STATE} (${ML_SCORE})\`", "inline": true},
+      {"name": "Latency", "value": "\`${DURATION}s\`", "inline": true},
       {"name": "Run Details", "value": "${RUN_LINK}", "inline": true},
       {"name": "Error Diagnostics", "value": "\`${ERROR_MESSAGE}\`", "inline": false}
     ],
-    "footer": {"text": "GitHub Actions Automated Cron • WSL Zsh Pipeline"}
+    "footer": {"text": "DuckDB Parquet + Scikit-Learn IsolationForest • GitHub Actions"}
   }]
 }
 JSON
 )
     curl -s -H "Content-Type: application/json" -X POST -d "${PAYLOAD}" "${DISCORD_WEBHOOK_URL}" > /dev/null
-    echo "[INFO] Discord notification dispatched."
-else
-    echo "[WARN] DISCORD_WEBHOOK_URL not set; skipping Discord webhook."
+    echo "[INFO] Discord v2.0 notification dispatched."
 fi
 
 exit $EXIT_CODE
