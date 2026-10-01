@@ -56,8 +56,6 @@ def update_readme(latest_df, total_snapshots: int, macro_entropy: float, ml_stat
 * 🧬 **Macro Distribution Entropy ($H$):** `{macro_entropy:.4f} bits`
 * 🧠 **Isolation Forest Anomaly Engine:** `{ml_state}` *(Min Decision Score: `{ml_score:.4f}`)*
 
-![Live Genomic Surveillance Dashboard](assets/telemetry_dashboard.svg)
-
 | 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 {table_body}
