@@ -22,8 +22,8 @@
 
 <!-- TELEMETRY_START -->
 ### 📡 Live Genomic & Unsupervised ML Telemetry
-* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:08:34 UTC`
-* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `16`
+* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:14:36 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `20`
 * 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
 * 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0000`)*
 
@@ -31,26 +31,26 @@
 
 | 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.165`) |
+| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.125`) |
+| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.128`) |
+| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.149`) |
 | `blaNDM_AMR_Gene` | **10,315** | `+0` | `0.00%` | `0.0000 bits` | 🟢 NORMAL (`0.000`) |
-| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.139`) |
-| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.130`) |
 <!-- TELEMETRY_END -->
 
 ---
 
-## 🏗️️ System Architecture & Data Workflow
+## 🏗 System Architecture & Data Workflow
 
 ```mermaid
 flowchart LR
-    A[⏰ GitHub Actions Cron<br/>Every 5 Hours] --> B[🧪 Pytest Quality Gate<br/>tests/test_pipeline.py]
-    B -->|Pass| C[🐚 Shell Orchestrator<br/>scripts/run_pipeline.sh]
-    C --> D[🧬 NCBI E-Utilities<br/>esearch + efetch FASTA]
-    D --> E[🔬 Bio Feature Extractor<br/>GC% & 3-mer Entropy]
-    E --> F[(🗄️ DuckDB + Parquet<br/>SQL Window Velocity)]
-    F --> G[🧠 Scikit-Learn<br/>Isolation Forest Model]
-    G --> H[📊 Dark-Mode SVG Plot<br/>+ README Marker Sync]
-    G --> I[💬 Discord Rich Embed<br/>#sentinel-mlops-bot]
+    A[GitHub Actions Cron<br/>Every 5 Hours] --> B[Pytest Quality Gate<br/>tests/test_pipeline.py]
+    B -->|Pass| C[Shell Orchestrator<br/>scripts/run_pipeline.sh]
+    C --> D[NCBI E-Utilities<br/>esearch + efetch FASTA]
+    D --> E[Bio Feature Extractor<br/>GC% & 3-mer Entropy]
+    E --> F[(DuckDB + Parquet<br/>SQL Window Velocity)]
+    F --> G[Scikit-Learn<br/>Isolation Forest Model]
+    G --> H[Dark-Mode SVG Plot<br/>+ README Marker Sync]
+    G --> I[Discord Rich Embed<br/>#sentinel-mlops-bot]
 ```
 
 ---
@@ -60,38 +60,50 @@ flowchart LR
 <details open>
 <summary><b>1. 🧬 Evolution from v1.0 (Baseline) to v2.1 (Enterprise MLOps)</b> <i>(Click to collapse/expand)</i></summary>
 
+<br/>
+
 | Capability Layer | v1.0 Baseline Architecture | v2.1 Enterprise MLOps Architecture |
 | :--- | :--- | :--- |
 | **Data Ingestion** | NCBI `esearch` total record counts only | NCBI `esearch` counts + `efetch` live **FASTA nucleotide sequences** |
-| **Feature Engineering** | Macro count Shannon entropy ($) | **FASTA GC-Content (%)**, **3-mer Shannon sequence complexity ($)**, & SQL 5h velocity ($\Delta$) |
+| **Feature Engineering** | Macro count Shannon entropy ($H$) | **FASTA GC-Content ($\text{GC}\%$)**, **3-mer Shannon complexity ($H_3$)**, & SQL 5h velocity ($\Delta$) |
 | **Storage Engine** | Flat JSON array (`telemetry_history.json`) | Columnar **DuckDB + ZSTD Apache Parquet** (`telemetry_store.parquet`) with `LAG()` windowing |
 | **Machine Learning** | None (Static threshold) | Unsupervised **Scikit-Learn `IsolationForest`** multidimensional outlier scoring |
 | **Observability & Testing** | Basic Discord text embed | **`pytest` CI gate**, **Dark-mode Matplotlib SVG dashboard**, & **Multi-tier Discord embeds** |
 
 </details>
 
-<details>
-<summary><b>2. 📐 Mathematical & Bioinformatic Formulations</b> <i>(Click to expand)</i></summary>
+<details open>
+<summary><b>2. 📐 Mathematical & Bioinformatic Formulations</b> <i>(Click to collapse/expand)</i></summary>
 
-* **3-mer Nucleotide Shannon Complexity ($):** Quantifies sequence randomness and compositional drift across sliding 3-base windows (=3$, ^3 = 64$ possible codons):
-  132956H_3 = -\sum_{i=1}^{64} p(k_i) \log_2 p(k_i)132956
-* **GC-Content Percentage (\%$):** Tracks evolutionary and structural stability across latest submitted isolates:
-  132956GC\% = \left( \frac{G + C}{A + T + G + C} \right) \times 100132956
-* **Isolation Forest Decision Score:** Partitions the feature matrix  = [\Delta_{\text{records}}, GC\%, H_3]$ using randomized binary trees (, ). Shorter average path lengths (h(x))$ isolate anomalous submission spikes or sudden sequence mutations.
+<br/>
+
+* **3-mer Nucleotide Shannon Complexity ($H_3$):** Quantifies sequence randomness and compositional drift across sliding 3-base windows ($k=3$, $4^3 = 64$ possible codons):
+
+$$H_3 = -\sum_{i=1}^{64} p(k_i) \log_2 p(k_i)$$
+
+* **GC-Content Percentage ($\text{GC}\%$):** Tracks evolutionary and structural stability across latest submitted isolates:
+
+$$\text{GC}\% = \left( \frac{G + C}{A + T + G + C} \right) \times 100$$
+
+* **Isolation Forest Decision Score:** Partitions the feature matrix $X = [\Delta_{\text{records}}, \text{GC}\%, H_3]$ using randomized binary trees (`n_estimators=150`, `contamination=0.08`). Shorter average path lengths $E(h(x))$ isolate anomalous submission spikes or sudden sequence mutations:
+
+$$s(x, n) = 2^{-\frac{E(h(x))}{c(n)}}$$
 
 </details>
 
 <details>
 <summary><b>3. 📂 Repository Directory & File Interconnections</b> <i>(Click to expand)</i></summary>
 
-* `src/bio_features.py` — Queries NCBI Entrez `esearch.fcgi` and `efetch.fcgi`, parses raw FASTA strings, and calculates \%$ and $.
+<br/>
+
+* `src/bio_features.py` — Queries NCBI Entrez `esearch.fcgi` and `efetch.fcgi`, parses raw FASTA strings, and calculates $\text{GC}\%$ and $H_3$.
 * `src/storage_duckdb.py` — Executes in-memory DuckDB OLAP queries over `data/telemetry_store.parquet` using SQL window functions (`LAG`, `AVG OVER`).
 * `src/ml_detector.py` — Runs Scikit-Learn `IsolationForest` and classifies each target into `WARMUP`, `NORMAL`, or `ANOMALY`.
 * `src/visualizer.py` — Renders the dual-panel dark-mode vector dashboard to `assets/telemetry_dashboard.svg`.
 * `src/sentinel.py` — Master coordinator that orchestrates all modules and surgically injects live metrics between `<!-- TELEMETRY_START -->
 ### 📡 Live Genomic & Unsupervised ML Telemetry
-* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:08:34 UTC`
-* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `16`
+* 🕒 **Last Automated Sync (UTC):** `2026-10-01 22:14:36 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `20`
 * 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
 * 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0000`)*
 
@@ -99,10 +111,10 @@ flowchart LR
 
 | 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.165`) |
+| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.125`) |
+| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.128`) |
+| `H5N1_Avian_Flu` | **229,067** | `+0` | `45.17%` | `5.8697 bits` | 🟢 NORMAL (`0.149`) |
 | `blaNDM_AMR_Gene` | **10,315** | `+0` | `0.00%` | `0.0000 bits` | 🟢 NORMAL (`0.000`) |
-| `A_baumannii_Meropenem` | **373** | `+0` | `46.82%` | `5.8287 bits` | 🟢 NORMAL (`0.139`) |
-| `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.130`) |
 <!-- TELEMETRY_END -->`.
 * `scripts/run_pipeline.sh` — Bash wrapper that captures latency/exit codes and dispatches color-coded telemetry cards to Discord.
 * `tests/test_pipeline.py` — Automated `pytest` suite verifying sequence math and ML state transitions before every cloud run.
