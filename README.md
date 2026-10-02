@@ -62,8 +62,8 @@ The guiding principle is the same one behind good drug-discovery pipelines: **a 
 The block below is rewritten automatically by the pipeline on every run. Do not edit it by hand.
 
 <!-- TELEMETRY_START -->
-* 🕒 **Last Automated Sync (UTC):** `2026-10-02 18:22:15 UTC`
-* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `20`
+* 🕒 **Last Automated Sync (UTC):** `2026-10-02 23:51:40 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `24`
 * 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
 * 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0800`)*
 
