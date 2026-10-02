@@ -3,7 +3,7 @@ name: 🧬 Pathogen Drift Sentinel MLOps
 on:
   schedule:
     # Executes automatically every 5 hours
-    - cron: '0 */5 * * *'
+    - cron: '23 */4 * * *'
   workflow_dispatch:
 
 permissions:
