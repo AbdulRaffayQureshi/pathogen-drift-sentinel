@@ -62,17 +62,17 @@ The guiding principle is the same one behind good drug-discovery pipelines: **a 
 The block below is rewritten automatically by the pipeline on every run. Do not edit it by hand.
 
 <!-- TELEMETRY_START -->
-* 🕒 **Last Automated Sync (UTC):** `2026-11-07 14:56:55 UTC`
-* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `508`
-* 🧬 **Macro Distribution Entropy ($H$):** `0.2749 bits`
-* 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.0842`)*
+* 🕒 **Last Automated Sync (UTC):** `2026-11-07 20:18:31 UTC`
+* 🗄️ **Cumulative DuckDB Parquet Snapshots:** `512`
+* 🧬 **Macro Distribution Entropy ($H$):** `0.2748 bits`
+* 🧠 **Isolation Forest Anomaly Engine:** `NOMINAL` *(Min Decision Score: `0.2142`)*
 
 | 🎯 Surveillance Target | 🧬 NCBI Records | ⚡ 5h Velocity ($\Delta$) | 🧪 FASTA GC% | 🔢 3-mer Complexity ($H_3$) | 🛡️ Isolation Forest State |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `A_baumannii_Meropenem` | **373** | `+0` | `38.57%` | `5.8487 bits` | 🟢 NORMAL (`0.357`) |
-| `blaNDM_AMR_Gene` | **10,348** | `+0` | `61.93%` | `5.7214 bits` | 🟢 NORMAL (`0.357`) |
-| `H5N1_Avian_Flu` | **229,651** | `+0` | `44.46%` | `5.8337 bits` | 🟢 NORMAL (`0.084`) |
 | `SLC6A4_Variants` | **37** | `+0` | `50.47%` | `5.8743 bits` | 🟢 NORMAL (`0.357`) |
+| `H5N1_Avian_Flu` | **229,659** | `+8` | `44.51%` | `5.8248 bits` | 🟢 NORMAL (`0.214`) |
+| `blaNDM_AMR_Gene` | **10,348** | `+0` | `61.93%` | `5.7214 bits` | 🟢 NORMAL (`0.357`) |
+| `A_baumannii_Meropenem` | **373** | `+0` | `38.57%` | `5.8487 bits` | 🟢 NORMAL (`0.357`) |
 <!-- TELEMETRY_END -->
 
 ---
